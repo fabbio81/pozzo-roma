@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pozzo Roma Gavorrano - 40 Box</title>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/it_IT/sdk.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+body{background:#0f0f0f;color:#eee;font-family:Arial;text-align:center;padding:15px}
+button{padding:10px 18px;margin:6px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+.fb{background:#1877F2;color:white}
+.google{background:white;color:black}
+.box{background:#222;border:2px solid #444;border-radius:12px;padding:12px;margin:8px;display:inline-block;width:250px;vertical-align:top}
+.raro{border-color:#4caf50}.legg{border-color:#ffd700}.ultra{border-color:#ff00ff}
+#chat{background:#111;border:1px solid #333;height:180px;overflow-y:auto;text-align:left;padding:10px;margin:15px;border-radius:8px}
+</style>
+</head>
+<body>
+<h1>⛏️ POZZO ROMA GAVORRANO</h1>
+<p id="user">Non loggato</p>
+<p id="dove">Stai giocando: - </p>
+
+<button class="fb" onclick="loginFB()">Entra con Facebook</button>
+<div id="g_id_onload" data-client_id="INSERISCI_ID_GOOGLE_QUI.apps.googleusercontent.com" data-callback="loginGoogle"></div>
+<div class="g_id_signin" data-type="standard" style="display:inline-block"></div>
+
+<h2 id="monete">Monete: 0 | Box: 0/40</h2>
+<div id="grid"></div>
+
+<hr>
+<h2>💬 STANZE CHAT MINATORI</h2>
+<select id="stanza" onchange="cambiaStanza()">
+  <option value="Bagno">🟢 Bagno di Gavorrano</option>
+  <option value="Ravi">🟡 Ravi Marchi</option>
+  <option value="Caldana">🔵 Caldana</option>
+  <option value="Massa">🔴 Massa Marittima</option>
+  <option value="Pozzo">⛏️ Pozzo Roma 1954</option>
+</select>
+<div id="chat"></div>
+<input id="msg" placeholder="Scrivi messaggio..." style="width:60%;padding:10px;border-radius:6px">
+<button onclick="invia()" style="background:#4caf50;color:white">Invia</button>
+
+<script>
+const APP_FB='1625328045872123';
+let monete=0,aperti=0,utente='Ospite',stanzaCorrente='Bagno';
+let boxes=[
+{id:1,nome:"CALDANA PORTA MEDIEVALE",zona:"Caldana",rar:"RARO",m:10},
+{id:2,nome:"CALDANA PIAZZA 1930",zona:"Caldana",rar:"RARO",m:10},
+{id:3,nome:"MASSA TORRE DEL CANDELIERE",zona:"Massa M.",rar:"RARO",m:10},
+{id:4,nome:"MASSA DUOMO SAN CERBONE",zona:"Massa M.",rar:"LEGGENDARIO",m:12},
+{id:5,nome:"MASSA PALAZZO ABBONDANZA 1265",zona:"Massa M.",rar:"LEGGENDARIO",m:12},
+{id:6,nome:"RAVI PIAZZA 1950",zona:"Ravi Marchi",rar:"RARO",m:8},
+{id:7,nome:"RAVI MARCHI VIGNACCIO 1949",zona:"Ravi Marchi",rar:"LEGGENDARIO",m:15},
+{id:8,nome:"RAVI FORNO A LEGNA",zona:"Ravi Marchi",rar:"RARO",m:9},
+{id:9,nome:"BAGNO PIAZZETTA LAVATOIO",zona:"Bagno",rar:"RARO",m:7},
+{id:10,nome:"BAGNO BAR GAVORRANO",zona:"Bagno",rar:"RARO",m:8},
+{id:11,nome:"INGRESSO MINIERA 1954",zona:"Gavorrano",rar:"RARO",m:12},
+{id:12,nome:"POZZO ROMA TORRE",zona:"Gavorrano",rar:"LEGGENDARIO",m:12},
+{id:13,nome:"FAMIGLIE BALCONI BAGNO",zona:"Bagno",rar:"LEGGENDARIO",m:7},
+{id:14,nome:"LAVERIA PIRITE",zona:"Gavorrano",rar:"LEGGENDARIO",m:14},
+{id:15,nome:"TELEFERICA PIRITE 1954",zona:"Gavorrano",rar:"LEGGENDARIO",m:12},
+{id:16,nome:"CASE OPERAIE + LETTERA MARIA",zona:"Bagno",rar:"ULTRA RARO",m:20,lettera:"Non tornare tardi in miniera. I bambini ti aspettano."}
+];
+for(let i=17;i<=40;i++){boxes.push({id:i,nome:"BOX MINIERA #"+i,zona:"Gavorrano",rar:"RARO",m:5})}
+
+window.fbAsyncInit=function(){FB.init({appId:APP_FB,cookie:true,xfbml:true,version:'v19.0'});};
+function loginFB(){
+ FB.login(function(r){
+  if(r.authResponse){
+   FB.api('/me',{fields:'name'},function(u){
+    utente=u.name;
+    document.getElementById('user').innerText='Ciao '+u.name+' ✅';
+    document.getElementById('dove').innerText='Stai giocando: '+stanzaCorrente+' - Tu: '+u.name;
+    localStorage.setItem('pozzo_user',u.name);
+   });
+  }
+ }, {scope:'public_profile'});
+}
+function loginGoogle(res){
+ let d=JSON.parse(atob(res.credential.split('.')[1]));
+ utente=d.name;
+ document.getElementById('user').innerText='Ciao '+d.name+' ✅';
+ document.getElementById('dove').innerText='Stai giocando: '+stanzaCorrente+' - Tu: '+d.name;
+}
+function apri(id){
+ let b=boxes.find(x=>x.id==id);
+ monete+=b.m; aperti++;
+ document.getElementById('monete').innerText=`Monete: ${monete} | Box: ${aperti}/40 | ${utente}`;
+ alert(`BOX #${b.id} APERTO!\n${b.nome}\n${b.zona}\n+${b.m} monete\n${b.lettera||''}\n\n--- PUBBLICITA 5s ---\nMontecatini cerca minatori per Pozzo Roma`);
+}
+let html=''; boxes.forEach(b=>{
+ let cls=b.rar=='RARO'?'raro':b.rar=='LEGGENDARIO'?'legg':'ultra';
+ html+=`<div class="box ${cls}"><b>#${b.id} ${b.nome}</b><br>${b.zona}<br>${b.rar} +${b.m}<br><button onclick="apri(${b.id})">APRI BOX</button></div>`;
+}); document.getElementById('grid').innerHTML=html;
+
+let chatData=JSON.parse(localStorage.getItem('pozzo_chat_'+stanzaCorrente)||'[]');
+function cambiaStanza(){
+ stanzaCorrente=document.getElementById('stanza').value;
+ document.getElementById('dove').innerText=`Stai giocando: ${stanzaCorrente} - Tu: ${utente}`;
+ chatData=JSON.parse(localStorage.getItem('pozzo_chat_'+stanzaCorrente)||'[]');
+ mostraChat();
+}
+function mostraChat(){
+ let c=document.getElementById('chat');
+ c.innerHTML=chatData.map(m=>`<div><b>${m.user} [${m.dove}]:</b> ${m.text} <small>${m.ora}</small></div>`).join('');
+ c.scrollTop=c.scrollHeight;
+}
+function invia(){
+ let t=document.getElementById('msg').value; if(!t) return;
+ if(utente=='Ospite'){alert('Fai login Facebook prima!');return;}
+ let msg={user:utente,dove:stanzaCorrente,text:t,ora:new Date().toLocaleTimeString()};
+ chatData.push(msg); localStorage.setItem('pozzo_chat_'+stanzaCorrente,JSON.stringify(chatData));
+ document.getElementById('msg').value=''; mostraChat();
+}
+let saved=localStorage.getItem('pozzo_user');
+if(saved){utente=saved; document.getElementById('user').innerText='Bentornato '+saved; document.getElementById('dove').innerText='Stai giocando: '+stanzaCorrente+' - Tu: '+saved;}
+mostraChat();
+</script>
+</body>
+</html>
